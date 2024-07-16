@@ -77,8 +77,10 @@ public class F1Cars extends Thread implements Comparable<F1Cars> {
      */
     @Override
     public void run() {
-        // TODO дожидаемся старта гонки
+        while (!race.getIsRaceStarted().get()) { //wait start
+        }
         race.start(this);
+
         while (currentDistance < targetDistance) {
             moveToTarget();
         }
