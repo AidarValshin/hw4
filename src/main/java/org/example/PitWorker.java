@@ -20,9 +20,12 @@ public class PitWorker extends Thread {
     public void run() {
         while (!isInterrupted()) {
             F1Cars car = pitStop.getCar();
-            //TODO работник ждет машину на питстопе и меняет шину на своей позиции
-            car.getWheel(position).replaceWheel();
-            //TODO работник сообщает о готовности
+            //работник ждет машину на питстопе и меняет шину на своей позиции
+            if(car!=null && car.getWheel(position).getStatus()!=100) {
+                car.getWheel(position).replaceWheel();
+                pitStop.getFinishPit().countDown();
+            }
+            // работник сообщает о готовности - все 4 колеса в 100 состоянии
         }
     }
 }

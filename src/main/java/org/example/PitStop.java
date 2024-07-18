@@ -1,9 +1,22 @@
 package org.example;
 
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+@Log4j2
+@Getter
 public class PitStop extends Thread {
 
     PitWorker[] workers = new PitWorker[4];
 
+    AtomicBoolean isEmpty = new AtomicBoolean(true);
+
+    private CountDownLatch finishPit = null;
+
+    private F1Cars currentCar;
     public PitStop() {
         for (int i = 0; i < workers.length; i++) {
             workers[i] = new PitWorker(i, this);
@@ -11,14 +24,24 @@ public class PitStop extends Thread {
         }
     }
 
-    public void pitline(F1Cars f1Cars) {
-        // TODO условие: на питстоп может заехать только 1 пилот
-        // TODO держим поток до момента смены всех шин
-        // TODO каждую шину меняет отдельный PitWowker поток
-        // TODO дожидаемся когда все PitWorker завершат свою работу над машиной
-        //TODO метод запускается из потока болида, нужна синхронизация с потоком питстопа
+    public void pitline(F1Cars f1Cars) throws InterruptedException {
+        while (!isEmpty.get()) {
 
-        // TODO отпускаем машину
+        }
+        isEmpty.setRelease(false);
+        currentCar = f1Cars;
+        log.info("Car {} on pit", currentCar.getCarId());
+        finishPit = new CountDownLatch(4);
+        //условие: на питстоп может заехать только 1 пилот
+        //держим поток до момента смены всех шин
+        //каждую шину меняет отдельный PitWowker поток
+        //дожидаемся когда все PitWorker завершат свою работу над машиной
+        //метод запускается из потока болида, нужна синхронизация с потоком питстопа
+        // отпускаем машину
+        finishPit.await();
+        log.info("Car {} have left pit", currentCar);
+        isEmpty.setRelease(true);
+        currentCar = null;
     }
 
 
@@ -30,8 +53,14 @@ public class PitStop extends Thread {
     }
 
     public F1Cars getCar() {
-        //TODO Блокируем поток до момента поступления машины на питстоп и возвращаем ее
+        //Блокируем поток до момента поступления машины на питстоп и возвращаем ее
+        while (isEmpty.get()) {
 
-        return null;
+        }
+        return currentCar;
+    }
+
+    public CountDownLatch getFinishPit() {
+        return finishPit;
     }
 }

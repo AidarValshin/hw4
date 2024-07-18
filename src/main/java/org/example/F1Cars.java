@@ -1,12 +1,18 @@
 package org.example;
 
 import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
+import java.sql.Timestamp;
 import java.util.Random;
 
 /**
  * Поток болида
  */
+@Log4j2
+@Getter
+@Setter
 public class F1Cars extends Thread implements Comparable<F1Cars> {
 
     /**
@@ -50,12 +56,18 @@ public class F1Cars extends Thread implements Comparable<F1Cars> {
     @Getter
     private long time = 0;
 
+    @Getter
+    @Setter
+    private Timestamp startTime;
+
     public F1Cars(long carId, PitStop pitStop) {
         super("F1Car[" + carId + "]");
         this.carId = carId;
         this.pitStop = pitStop;
         random = new Random();
-
+        for (int i = 0; i < 4; i++) {
+            wheels[i] = new Wheel();
+        }
     }
 
     /**
@@ -79,13 +91,14 @@ public class F1Cars extends Thread implements Comparable<F1Cars> {
     public void run() {
         while (!race.getIsRaceStarted().get()) { //wait start
         }
+        log.info("Car {} is running", this.carId);
         race.start(this);
 
         while (currentDistance < targetDistance) {
             moveToTarget();
         }
         this.time = race.finish(this);
-
+        log.info("Car {} finished", this.carId);
     }
 
     /**
@@ -94,12 +107,14 @@ public class F1Cars extends Thread implements Comparable<F1Cars> {
      * 2) Перемещаемся 1000 миллисекунд с случайной скоростью
      */
     private void moveToTarget() {
+        log.info("Car {} is moving", this.carId);
+        long speed = 0;
+        try {
         if (isNeedPit()) {
+            log.info("Car {} needs pit", this.carId);
             pitStop.pitline(this);
         }
-        long speed = getNextSpeed();
-
-        try {
+            speed = getNextSpeed();
             sleep(1000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -109,10 +124,11 @@ public class F1Cars extends Thread implements Comparable<F1Cars> {
             wheel.travel(speed);
         }
         currentDistance += speed;
+        log.info("Car {} moved", this.carId);
     }
 
     //Требуется замена если хотя бы 1 шина с остатоком меньше 25%
-    private boolean isNeedPit() {
+    public boolean isNeedPit() {
         for (Wheel wheel : wheels) {
             if (wheel.getStatus() < 25) {
                 return true;

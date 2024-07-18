@@ -1,8 +1,10 @@
 package org.example;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 @Getter
+@Log4j2
 public class Team {
     private final long id;
 
@@ -11,10 +13,12 @@ public class Team {
     private final PitStop pitStop = new PitStop();
 
     public Team(long id) {
+        log.info("Team {} creating", id);
         this.id = id;
         for (int i = 0; i < this.cars.length; i++) {
             this.cars[i] = new F1Cars(id * 10 + i, pitStop);
         }
+        log.info("Team {} created", id);
         pitStop.start();
     }
 
