@@ -6,7 +6,6 @@ import lombok.extern.log4j.Log4j2;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -75,7 +74,7 @@ public class Race {
         log.info("Результат гонки:");
         int position = 0;
         for (F1Cars participant : participantCars) {
-            log.info("Позиция: {} время: {}", position++, participant.getName());
+            log.info("Позиция: {} машина {} время: {}", position++, participant.getName(), participant.getTime());
         }
     }
 }
